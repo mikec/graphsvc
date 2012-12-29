@@ -1,0 +1,3 @@
+graphsvc configures an easily consumable service that interfaces with neo4j's REST API. Endpoints for the service are created based on a defined set of node and relationship types. 
+
+this is a work in progress not yet intended for use...
