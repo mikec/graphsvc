@@ -1,24 +1,25 @@
-var Request = require('./lib/request');
+var Request = require('./lib/request')
+  , Q = require('q');
 
 /*
 	service must run on:
 	http://localhost:3000
 	
-	service must be configured with the following options:
-	var options = {
-	   "nodeTypes":
-	   [
-		  { "name": "user", "key": "fbid" },
-		  { "name": "band", "key": "fbid" },
-		  { "name": "song", "key": "scid" }
-	   ]
-	}
+	service must be configured as follows
+	var app = graphsvc(neo4j_http_service_url);
+	app.entity("/users/:fbid");
+	app.entity("/bands/:fbid");
+	app.entity("/songs/:scid");
+	app.entity("/people/:fbid", "person");
+	//app.connection("is_member_of", "/users/:fbid/bands", "/bands/:fbid/members");
+	app.listen(3000);
 */
 
 var _req = new Request("http://localhost:3000");
 
 //remove any existing nodes from the database that may conflict with tests
-cleanDatabase().then(function() {
+cleanDatabase().when(function() {
+	console.log("");
 	//start running tests in sequence
 	console.log("RUNNING TESTS");
 	console.log("");
@@ -39,14 +40,76 @@ cleanDatabase().then(function() {
 	return DeleteNodeThatDNE_Test();
 }).then(function() {
 	return UpdateNodeThatDNE_Test();
+}).then(function() {
+	return AddConnectionToNewNode_Test();
+}).then(function() {
+	return AddExistingConnection_Test();
+}).then(function() {
+	return AddConnectionToExistingNode_Test();
+}).then(function() {
+	return AddConnectionWithProperties_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
 
 function cleanDatabase() {
-	console.log("CLEANING DATABASE");
+	//return Q.fcall(function() { return true });
+
 	console.log("");
-	return _req.del('songs/123');
+	console.log("CLEANING DATABASE");
+	console.log("DELETING 'songs/123'");
+	return _req.del('songs/123').then(function(r) {
+		console.log("DELETING 'users/101'");
+		return _req.del('users/101').then(function() {
+			return Q.fcall(function() { return true; });
+		}, function(err) {
+			console.log(err);
+			return Q.fcall(function() { return true; });
+		});
+	}, function(err) {
+		console.log(err);
+		return Q.fcall(function() { return true; });
+	}).then(function(r) {
+		console.log("DELETING 'users/102'");
+		return _req.del('users/102').then(function() {
+			return Q.fcall(function() { return true; });
+		}, function(err) {
+			console.log(err);
+			return Q.fcall(function() { return true; });
+		});
+	}).then(function(r) {
+		console.log("DELETING 'users/103'");
+		return _req.del('users/103').then(function() {
+			return Q.fcall(function() { return true; });
+		}, function(err) {
+			console.log(err);
+			return Q.fcall(function() { return true; });
+		});
+	}).then(function(r) {
+		console.log("DELETING 'bands/102'");
+		return _req.del('bands/102').then(function() {
+			return Q.fcall(function() { return true; });
+		}, function(err) {
+			console.log(err);
+			return Q.fcall(function() { return true; });
+		});
+	}).then(function(r) {
+		console.log("DELETING 'bands/103'");
+		return _req.del('bands/103').then(function() {
+			return Q.fcall(function() { return true; });
+		}, function(err) {
+			console.log(err);
+			return Q.fcall(function() { return true; });
+		});
+	}).then(function(r) {
+		console.log("DELETING 'bands/104'");
+		return _req.del('bands/104').then(function() {
+			return Q.fcall(function() { return true; });
+		}, function(err) {
+			console.log(err);
+			return Q.fcall(function() { return true; });
+		});
+	});
 }
 
 /*
@@ -77,10 +140,9 @@ function AddDuplicateNode_Test() {
 		'songs', 
 		{ "scid":123, "dont let it": "add me" }
 	).then(function(r) {
-		var error = (r.body && r.body.error ? r.body.error : r.body.toString());
-		Assert.AreEqual(t, expected, error);
+		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.Error(t, err);
+		Assert.AreEqual(t, expected, err.toString());
 	});
 }
 
@@ -94,10 +156,9 @@ function AddNodeWithNoIndex_Test() {
 		'songs', 
 		{ "title": "rocks tonic juice magic", "length": "4:34", "rating": "totally awesome" }
 	).then(function(resp) {
-		var error = (resp.body && resp.body.error ? resp.body.error : resp.body.toString());
-		Assert.AreEqual(t, expected, error);
+		Assert.AreEqual(t, expected, resp.body);
 	}, function(err) {
-		Assert.Error(t, err);
+		Assert.AreEqual(t, expected, err.toString());
 	});
 }
 
@@ -159,10 +220,9 @@ function DeleteNodeThatDNE_Test() {
 	var t = "DeleteNodeThatDNE_Test";
 	var expected = "Error: DELETE song FAILED: song with key scid=thisnodedne123 does not exist.";
 	return _req.del('songs/thisnodedne123').then(function(r) {
-		var error = (r.body && r.body.error ? r.body.error : r.body.toString());
 		Assert.AreEqual(t, expected, error);
 	}, function(err) {
-		Assert.Error(t, err);
+		Assert.AreEqual(t, expected, err.toString());
 	});
 }
 
@@ -171,12 +231,11 @@ function DeleteNodeThatDNE_Test() {
  */
 function UpdateNodeThatDNE_Test() {
 	var t = "UpdateNodeThatDNE_Test";
-	var expected = "Error: PUT song FAILED: song with key scid=thisnodedne123 does not exist.";
+	var expected = "Error: UPDATE song FAILED: song with key scid=thisnodedne123 does not exist.";
 	return _req.put('songs/thisnodedne123', {"doesnt": "matter"}).then(function(r) {
-		var error = (r.body && r.body.error ? r.body.error : r.body.toString());
-		Assert.AreEqual(t, expected, error);
+		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.Error(t, err);
+		Assert.AreEqual(t, expected, err.toString());
 	});
 }
 
@@ -189,9 +248,138 @@ function GetNode_Test() {
 	return _req.get('songs/thisnodedne123').then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.Error(t, err);
+		Assert.AreEqual(t, expected, err.toString());
 	});
 }
+
+/*
+ *	Add a connection from an existing node to a new node
+ */
+function AddConnectionToNewNode_Test() {
+	var t = "AddConnectionToNewNode_Test";
+	
+	var membersResp = null;
+	var bandsResp = null;
+	
+	var expected = {
+		"bandsResp": [{'fbid':103, 'name':'the pushpops'}],
+		"membersResp": [{'fbid':101, 'name':'joe'}]
+	};
+	return _req.post('users', {'fbid':101, 'name':'joe'}).then(
+		function(r) {
+			return Q.fcall(function() { return true; });
+		}, function(err) {
+			return Q.fcall(function() { return true; });
+		}
+	).then(function() {
+		return _req.post('users/101/bands', {'fbid':103, 'name':'the pushpops'});
+	}).then(
+		function(r) {
+			return _req.get('users/101/bands');
+		}, function(err) {
+			Assert.Error(t, err.toString());
+		}
+	).then(function(r) {
+		bandsResp = r;
+		return _req.get('bands/103/members');
+	}).then(function(r) {
+		membersResp = r;
+		var actual = {
+			"bandsResp": bandsResp.body,
+			"membersResp": membersResp.body
+		};
+		Assert.AreEqual(t, expected, actual);
+	}, function(err) {
+		Assert.Error(t, err.toString());
+	});
+}
+
+/*
+ *	Try to add a connection that already exists
+ */
+function AddExistingConnection_Test() {
+	var t = "AddExistingConnection_Test";
+	var expected = "Error: CREATE CONNECTION 'users/101' is_member_of 'bands/103' FAILED: Connection already exists";
+	
+	return _req.post('users/101/bands', {'fbid':103, 'name':'the pushpops'}).then(function(r) {
+		if(r && r.body && r.body.error) {
+			Assert.AreEqual(t, expected, r.body.error);
+		} else {
+			Assert.AreEqual(t, expected, r.body);
+		}
+	}, function(err) {
+		Assert.AreEqual(t, expected, err);
+	});
+}
+
+/*
+ *	Add a connection between two existing nodes
+ */
+function AddConnectionToExistingNode_Test() {
+	var t = "AddConnectionToExistingNode_Test";
+	var expected = {
+		"bandsResp": [{'fbid':104, 'name':'the moves', 'genre':'graphcore'}],
+		"membersResp": [{'fbid':102, 'name':'dave'}]
+	};
+	
+	return _req.post('bands', {'fbid':104, 'name':'the moves', 'genre':'graphcore'}).then(
+		function(r) { return true; }, function(err) { return true; }
+	).when(function() {
+		return _req.post('users', {'fbid':102, 'name':'dave'});
+	}).then(function() {
+		return _req.post('users/102/bands', {'fbid':104});
+	}).then(function(r) {
+		return _req.get('users/102/bands');
+	}).then(function(r) {
+		bandsResp = r;
+		return _req.get('bands/104/members');
+	}).then(function(r) {
+		membersResp = r;
+		var actual = {
+			"bandsResp": bandsResp.body,
+			"membersResp": membersResp.body
+		};
+		Assert.AreEqual(t, expected, actual);
+	}, function(err) {
+		Assert.Error(t, err.toString());
+	});
+}
+
+/*
+ *	Add a connection with relationship properties
+ */
+function AddConnectionWithProperties_Test() {
+	var t = "AddConnectionWithProperties_Test";
+	var expected = {
+		"bandsResp": [{'fbid':104, 'name':'the moves', 'genre':'graphcore', 'relationship':{'since':'today','instrument':'drums'}}],
+		"membersResp": [{"name":"dave","fbid":102},{'fbid':103, 'name':'jamal', 'relationship':{'since':'today','instrument':'drums'}}]
+	};
+	
+	return _req.post('bands', {'fbid':104, 'name':'the moves', 'genre':'graphcore'}).then(
+		function(r) { return true; }, function(err) { return true; }
+	).when(function() {
+		return _req.post('users', {'fbid':103, 'name':'jamal'});
+	}).then(function() {
+		return _req.post('users/103/bands', {'fbid':104, 'relationship':{'since':'today','instrument':'drums'}});
+	}).then(function(r) {
+		return _req.get('users/103/bands');
+	}).then(function(r) {
+		bandsResp = r;
+		return _req.get('bands/104/members');
+	}).then(function(r) {
+		membersResp = r;
+		var actual = {
+			"bandsResp": bandsResp.body,
+			"membersResp": membersResp.body
+		};
+		Assert.AreEqual(t, expected, actual);
+	}, function(err) {
+		Assert.Error(t, err.toString());
+	});
+}
+
+
+
 
 var Assert = {};
 Assert.AreEqual = function(testName, expected, actual) {
