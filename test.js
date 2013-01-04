@@ -32,4 +32,5 @@ app.entity("/bands/fbid");
 app.entity("/songs/scid");
 app.entity("/people/fbid", "person");
 app.connection("is_member_of", "/users/fbid/bands", "/bands/fbid/members");
+app.connection("is_friends_with", "/users/fbid/friends");
 app.listen(3000);

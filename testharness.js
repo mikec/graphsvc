@@ -43,73 +43,57 @@ cleanDatabase().when(function() {
 }).then(function() {
 	return AddConnectionToNewNode_Test();
 }).then(function() {
-	return AddExistingConnection_Test();
+	return UpdateConnectionWithoutRelationshipProperties_Test();
 }).then(function() {
 	return AddConnectionToExistingNode_Test();
 }).then(function() {
 	return AddConnectionWithProperties_Test();
+}).then(function() {
+	return AddInboundConnection_Test();
+}).then(function() {
+	return UpdateExistingConnection_Test();
+}).then(function() {
+	return AddConnectionBetweenTwoNodesInTheSameIndex_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
 
 function cleanDatabase() {
-	//return Q.fcall(function() { return true });
-
 	console.log("");
 	console.log("CLEANING DATABASE");
-	console.log("DELETING 'songs/123'");
-	return _req.del('songs/123').then(function(r) {
-		console.log("DELETING 'users/101'");
-		return _req.del('users/101').then(function() {
-			return Q.fcall(function() { return true; });
-		}, function(err) {
-			console.log(err);
-			return Q.fcall(function() { return true; });
-		});
-	}, function(err) {
-		console.log(err);
-		return Q.fcall(function() { return true; });
-	}).then(function(r) {
-		console.log("DELETING 'users/102'");
-		return _req.del('users/102').then(function() {
-			return Q.fcall(function() { return true; });
-		}, function(err) {
-			console.log(err);
-			return Q.fcall(function() { return true; });
-		});
-	}).then(function(r) {
-		console.log("DELETING 'users/103'");
-		return _req.del('users/103').then(function() {
-			return Q.fcall(function() { return true; });
-		}, function(err) {
-			console.log(err);
-			return Q.fcall(function() { return true; });
-		});
-	}).then(function(r) {
-		console.log("DELETING 'bands/102'");
-		return _req.del('bands/102').then(function() {
-			return Q.fcall(function() { return true; });
-		}, function(err) {
-			console.log(err);
-			return Q.fcall(function() { return true; });
-		});
-	}).then(function(r) {
-		console.log("DELETING 'bands/103'");
-		return _req.del('bands/103').then(function() {
-			return Q.fcall(function() { return true; });
-		}, function(err) {
-			console.log(err);
-			return Q.fcall(function() { return true; });
-		});
-	}).then(function(r) {
-		console.log("DELETING 'bands/104'");
-		return _req.del('bands/104').then(function() {
-			return Q.fcall(function() { return true; });
-		}, function(err) {
-			console.log(err);
-			return Q.fcall(function() { return true; });
-		});
+	return sendAndLogDelete('songs/123').then(function() {
+		return sendAndLogDelete('users/101');
+	}).then(function() {
+		return sendAndLogDelete('users/102');
+	}).then(function() {
+		return sendAndLogDelete('users/103');
+	}).then(function() {
+		return sendAndLogDelete('users/111');
+	}).then(function() {
+		return sendAndLogDelete('bands/102');
+	}).then(function() {
+		return sendAndLogDelete('bands/103');
+	}).then(function() {
+		return sendAndLogDelete('bands/104');
+	}).then(function() {
+		return sendAndLogDelete('bands/105');
+	}).then(function() {
+		return sendAndLogDelete('users/221');
+	}).then(function() {
+		return sendAndLogDelete('users/222');
+	}).then(function() {
+		return sendAndLogDelete('users/223');
 	});
+}
+function sendAndLogDelete(url) {
+	console.log("DELETING " + url);
+	return _req.del(url).then(
+		function() { return Q.fcall(function() { return true; }); },
+		function(err) { 
+			console.log(err);
+			return Q.fcall(function() { return true; });
+		}
+	);
 }
 
 /*
@@ -297,11 +281,11 @@ function AddConnectionToNewNode_Test() {
 /*
  *	Try to add a connection that already exists
  */
-function AddExistingConnection_Test() {
-	var t = "AddExistingConnection_Test";
-	var expected = "Error: CREATE CONNECTION 'users/101' is_member_of 'bands/103' FAILED: Connection already exists";
+function UpdateConnectionWithoutRelationshipProperties_Test() {
+	var t = "UpdateConnectionWithoutRelationshipProperties_Test";
+	var expected = "Error: UPDATE CONNECTION 'users/101' is_member_of 'bands/103' FAILED: No relationship properties were provided as part of the request";
 	
-	return _req.post('users/101/bands', {'fbid':103, 'name':'the pushpops'}).then(function(r) {
+	return _req.post('users/101/bands', {'fbid':103}).then(function(r) {
 		if(r && r.body && r.body.error) {
 			Assert.AreEqual(t, expected, r.body.error);
 		} else {
@@ -371,6 +355,107 @@ function AddConnectionWithProperties_Test() {
 		var actual = {
 			"bandsResp": bandsResp.body,
 			"membersResp": membersResp.body
+		};
+		Assert.AreEqual(t, expected, actual);
+	}, function(err) {
+		Assert.Error(t, err.toString());
+	});
+}
+
+/*
+ *	Add an inbound connection
+ */
+function AddInboundConnection_Test() {
+	var t = "AddInboundConnection_Test";
+	var expected = {
+		"bandsResp": [{'fbid':105, 'name':'sunny side up', 'relationship':{'since':'always'}}],
+		"membersResp": [{"name":"george","fbid":111, 'relationship':{'since':'always'}}]
+	};
+	
+	var bandsResp = null;
+	var membersResp = null;
+	
+	return _req.post('bands', {'fbid':105, 'name':'sunny side up'}).fin(function() {
+		return _req.post('users', {"name":"george","fbid":111});
+	}).fin(function() {
+		return _req.post('bands/105/members', {"fbid":111, 'relationship':{'since':'always'}});
+	}).then(function() {
+		return _req.get('users/111/bands');
+	}).then(function(r) {
+		bandsResp = r;
+		return _req.get('bands/105/members');
+	}).then(function(r) {
+		membersResp = r;
+		var actual = {
+			"bandsResp": bandsResp.body,
+			"membersResp": membersResp.body
+		};
+		Assert.AreEqual(t, expected, actual);
+	}, function(err) {
+		Assert.Error(t, err.toString());
+	});
+}
+
+/*
+ *	Update an existing connection
+ */
+function UpdateExistingConnection_Test() {
+	var t = "UpdateExistingConnection_Test";
+	var expected = {
+		"bandsResp": [{'fbid':105, 'name':'sunny side up', 'relationship':{'since':'a long time', 'comment':'verycool'}}],
+		"membersResp": [{"name":"george","fbid":111, 'relationship':{'since':'a long time', 'comment':'verycool'}}]
+	};
+	
+	var bandsResp = null;
+	var membersResp = null;
+	
+	return _req.post(
+		'bands/105/members', 
+		{"fbid":111, 'relationship':{'comment':'verycool', 'since':'a long time'}}
+	).then(function() {
+		return _req.get('users/111/bands');
+	}).then(function(r) {
+		bandsResp = r;
+		return _req.get('bands/105/members');
+	}).then(function(r) {
+		membersResp = r;
+		var actual = {
+			"bandsResp": bandsResp.body,
+			"membersResp": membersResp.body
+		};
+		Assert.AreEqual(t, expected, actual);
+	}, function(err) {
+		Assert.Error(t, err.toString());
+	});
+}
+
+/*
+ *	Add a connection between two nodes from the same index
+ */
+function AddConnectionBetweenTwoNodesInTheSameIndex_Test() {
+	var t = "AddConnectionBetweenTwoNodesInTheSameIndex_Test";
+	var expected = {
+		"r1": [{'name':'sadie', 'fbid':221, "relationship": { "since":"monday"}}],
+		"r2": [{"name":"jenny", "fbid":222, "relationship": { "since":"monday"}}, {"name":"amy", "fbid":223, "relationship": { "since":"tuesday"}}]
+	};
+	
+	var bandsResp = null;
+	var membersResp = null;
+	
+	return _req.post('users', {'name':'sadie', 'fbid':221}).fin(function() {
+		return _req.post('users/221/friends', {"name":"jenny", "fbid":222, "relationship": { "since":"monday"}});
+	}).then(function(r) {
+		return _req.post('users/221/friends', {"name":"amy", "fbid":223, "relationship": { "since":"tuesday"}});
+	}).then(function(r) {
+		return _req.get('users/222/friends');
+	}).then(function(s) {
+		r1 = s;
+		return _req.get('users/221/friends');
+	}).then(function(r) {
+		r2 = r;
+		var actual = {
+			"r1": r1.body,
+			"r2": r2.body
 		};
 		Assert.AreEqual(t, expected, actual);
 	}, function(err) {
