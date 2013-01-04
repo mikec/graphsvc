@@ -54,6 +54,8 @@ cleanDatabase().when(function() {
 	return UpdateExistingConnection_Test();
 }).then(function() {
 	return AddConnectionBetweenTwoNodesInTheSameIndex_Test();
+}).then(function() {
+	return GetNodeWithRelationships_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
@@ -458,6 +460,20 @@ function AddConnectionBetweenTwoNodesInTheSameIndex_Test() {
 			"r2": r2.body
 		};
 		Assert.AreEqual(t, expected, actual);
+	}, function(err) {
+		Assert.Error(t, err.toString());
+	});
+}
+
+/*
+ *	Get node with relationships 
+ */
+function GetNodeWithRelationships_Test() {
+	var t = "GetNodeWithRelationships_Test";
+	var expected = {};
+	
+	return _req.get('users/221?include=friends,bands').then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
 		Assert.Error(t, err.toString());
 	});
