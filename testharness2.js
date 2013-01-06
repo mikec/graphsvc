@@ -1,8 +1,7 @@
-var graphsvc = require('./index')
-  , r = require('./lib/request')
+var graphsvc = require('graphsvc')
   , Q = require('q');
 
-/*var app = graphsvc("http://localhost:7474");
+var app = graphsvc("http://localhost:7474");
 app.entity("/users/fbid");
 app.entity("/bands/fbid");
 app.entity("/songs/scid");
@@ -11,9 +10,7 @@ app.connection("is_member_of", "/users/fbid/bands", "/bands/fbid/members");
 app.connection("is_friends_with", "/users/fbid/friends");
 app.listen(3000);
 
-var _req = new app.Request("http://localhost:3000");*/
-
-var _req = new r("http://localhost:3000");
+var _req = new app.request("http://localhost:3000");
 
 //remove any existing nodes from the database that may conflict with tests
 cleanDatabase().when(function() {
@@ -53,11 +50,7 @@ cleanDatabase().when(function() {
 }).then(function() {
 	return AddConnectionBetweenTwoNodesInTheSameIndex_Test();
 }).then(function() {
-	return GetNodeWithNoIncludedRelationships_Test();
-}).then(function() {
-	return GetNodeWithIncludedOutboundRelationship_Test();
-}).then(function() {
-	return GetNodeWithIncludedTwoWayRelationship_Test();
+	return GetNodeWithRelationships_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
@@ -468,74 +461,11 @@ function AddConnectionBetweenTwoNodesInTheSameIndex_Test() {
 }
 
 /*
- *	Get node with no included relationships
- *
- *	'friends' and 'bands' properties should be url pointers)
+ *	Get node with relationships 
  */
-function GetNodeWithNoIncludedRelationships_Test() {
-	var t = "GetNodeWithNoIncludedRelationships_Test";
-	var expected = {
-		"fbid":221,"name":"sadie",
-		"connections":{
-			"bands":"http://localhost:3000/users/221/bands",
-			"friends":"http://localhost:3000/users/221/friends"
-		}
-	};
-	
-	return _req.post('users/221/bands', {'fbid': 104}).then(function(r) {
-		return _req.get('users/221');
-	}).then(function(r) {
-		Assert.AreEqual(t, expected, r.body);
-	}, function(err) {
-		Assert.Error(t, err.toString());
-	});
-}
-
-/*
- *	Get node with included outbound relationship 
- *
- *  outbound relationship 'bands' : (user - is_member_of -> band)
- *	'bands' property should be a collection of bands
- */
-function GetNodeWithIncludedOutboundRelationship_Test() {
-	var t = "GetNodeWithIncludedOutboundRelationship_Test";
-	var expected = {
-		"fbid":221,"name":"sadie",
-		"connections":{
-			"bands":[
-				{"genre":"graphcore","name":"the moves","fbid":104}
-			],
-			"friends":"http://localhost:3000/users/221/friends"
-		}
-	};
-	
-	return _req.get('users/221?include=bands').then(function(r) {
-		Assert.AreEqual(t, expected, r.body);
-	}, function(err) {
-		Assert.Error(t, err.toString());
-	});
-}
-
-/*
- *	Get node with included two way relationship
- *
- *  two way relationship 'friends' : (user <- is_friends_with -> user)
- *	'friends' property should be a collection of users
- */
-function GetNodeWithIncludedTwoWayRelationship_Test() {
-	var t = "GetNodeWithIncludedTwoWayRelationship_Test";
-	var expected = {
-		"fbid":221,"name":"sadie",
-		"connections":{
-			"bands":[
-				{"genre":"graphcore","name":"the moves","fbid":104}
-			],
-			"friends":[
-				{"fbid":222,"name":"jenny","relationship":{"since":"monday"}},
-				{"fbid":223,"name":"amy","relationship":{"since":"tuesday"}}
-			]
-		}
-	};
+function GetNodeWithRelationships_Test() {
+	var t = "GetNodeWithRelationships_Test";
+	var expected = {};
 	
 	return _req.get('users/221?include=friends,bands').then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
