@@ -58,6 +58,8 @@ cleanDatabase().when(function() {
 	return GetNodeWithIncludedOutboundRelationship_Test();
 }).then(function() {
 	return GetNodeWithIncludedTwoWayRelationship_Test();
+}).then(function() {
+	return CheckErrorThrownOnGetEntity_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
@@ -87,6 +89,8 @@ function cleanDatabase() {
 		return sendAndLogDelete('users/222');
 	}).then(function() {
 		return sendAndLogDelete('users/223');
+	}).then(function() {
+		return sendAndLogDelete('users/333');
 	});
 }
 function sendAndLogDelete(url) {
@@ -123,7 +127,7 @@ function AddNode_Test() {
  */
 function AddDuplicateNode_Test() {
 	var t = "AddDuplicateNode_Test";
-	var expected = "Error: CREATE song FAILED: A song with key scid=123 already exists.";
+	var expected = "CREATE song FAILED: A song with key scid=123 already exists.";
 	return _req.post(
 		'songs', 
 		{ "scid":123, "dont let it": "add me" }
@@ -139,7 +143,7 @@ function AddDuplicateNode_Test() {
  */
 function AddNodeWithNoIndex_Test() {
 	var t = "AddNodeWithNoIndex_Test";
-	var expected = "Error: CREATE song FAILED: Required key property scid not found. You must include a value for scid as part of your request.";
+	var expected = "CREATE song FAILED: Required key property scid not found. You must include a value for scid as part of your request.";
 	return _req.post(
 		'songs', 
 		{ "title": "rocks tonic juice magic", "length": "4:34", "rating": "totally awesome" }
@@ -206,7 +210,7 @@ function DeleteNode_Test() {
  */
 function DeleteNodeThatDNE_Test() {
 	var t = "DeleteNodeThatDNE_Test";
-	var expected = "Error: DELETE song FAILED: song with key scid=thisnodedne123 does not exist.";
+	var expected = "DELETE song FAILED: song with key scid=thisnodedne123 does not exist.";
 	return _req.del('songs/thisnodedne123').then(function(r) {
 		Assert.AreEqual(t, expected, error);
 	}, function(err) {
@@ -219,7 +223,7 @@ function DeleteNodeThatDNE_Test() {
  */
 function UpdateNodeThatDNE_Test() {
 	var t = "UpdateNodeThatDNE_Test";
-	var expected = "Error: UPDATE song FAILED: song with key scid=thisnodedne123 does not exist.";
+	var expected = "UPDATE song FAILED: song with key scid=thisnodedne123 does not exist.";
 	return _req.put('songs/thisnodedne123', {"doesnt": "matter"}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
@@ -287,7 +291,7 @@ function AddConnectionToNewNode_Test() {
  */
 function UpdateConnectionWithoutRelationshipProperties_Test() {
 	var t = "UpdateConnectionWithoutRelationshipProperties_Test";
-	var expected = "Error: UPDATE CONNECTION 'users/101' is_member_of 'bands/103' FAILED: No relationship properties were provided as part of the request";
+	var expected = "UPDATE CONNECTION 'users/101' is_member_of 'bands/103' FAILED: No relationship properties were provided as part of the request";
 	
 	return _req.post('users/101/bands', {'fbid':103}).then(function(r) {
 		if(r && r.body && r.body.error) {
@@ -541,6 +545,38 @@ function GetNodeWithIncludedTwoWayRelationship_Test() {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
 		Assert.Error(t, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function CheckErrorThrownOnGetEntity_Test() {
+	var t = "CheckErrorThrownOnGetEntity_Test";
+	var expected = "You don't have permission to read users where fbid=333";
+	
+	return _req.post('users', {'fbid': 333, 'name': 'samwell'}).then(function(r) {
+		return _req.get('users/333');
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function CheckEmptyObjectReturnedOnGetEntity_Test() {
+	var t = "CheckEmptyObjectReturnedOnGetEntity_Test";
+	var expected = "{}";
+	
+	return _req.post('users', {'fbid': 334, 'name': 'piston honda'}).then(function(r) {
+		return _req.get('users/333');
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
 	});
 }
 
