@@ -59,6 +59,10 @@ cleanDatabase().when(function() {
 }).then(function() {
 	return GetNodeWithIncludedTwoWayRelationship_Test();
 }).then(function() {
+	return DeleteExistingRelationship_Test();
+}).then(function() {
+	return DeleteRelationshipThatDNE_Test();
+}).then(function() {
 	return CheckErrorThrownOnGetEntity_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
@@ -545,6 +549,38 @@ function GetNodeWithIncludedTwoWayRelationship_Test() {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
 		Assert.Error(t, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function DeleteExistingRelationship_Test() {
+	var t = "DeleteExistingRelationship_Test";
+	var expected = [{"name":"the pushpops","fbid":103}];
+	
+	return _req.post('users/101/bands', {'fbid':109, 'name':'flyswatter'}).then(function(r) {
+		return _req.del('users/101/bands/109');
+	}).then(function(r) {
+		return _req.get('users/101/bands');
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function DeleteRelationshipThatDNE_Test() {
+	var t = "DeleteRelationshipThatDNE_Test";
+	var expected = "DELETE CONNECTION FAILED: 'users/101' is_member_of 'bands/2345' does not exist.";
+	
+	return _req.del('users/101/bands/2345').then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
 	});
 }
 
