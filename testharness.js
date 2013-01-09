@@ -147,12 +147,21 @@ function AddDuplicateNode_Test() {
  */
 function AddNodeWithNoIndex_Test() {
 	var t = "AddNodeWithNoIndex_Test";
-	var expected = "CREATE song FAILED: Required key property scid not found. You must include a value for scid as part of your request.";
+	//var expected = "CREATE song FAILED: Required key property scid not found. You must include a value for scid as part of your request.";
+	var expected = "Object with scid > 0";
 	return _req.post(
 		'songs', 
 		{ "title": "rocks tonic juice magic", "length": "4:34", "rating": "totally awesome" }
 	).then(function(resp) {
-		Assert.AreEqual(t, expected, resp.body);
+		var tst = false;
+		try {
+			tst = parseInt(resp.body.id) > 0;
+		} catch(err) {}
+		if(tst) {
+			Assert.AreEqual(t, expected, "Object with scid > 0");
+		} else {
+			Assert.AreEqual(t, expected, resp.body.id);
+		}
 	}, function(err) {
 		Assert.AreEqual(t, expected, err.toString());
 	});
