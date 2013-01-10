@@ -63,7 +63,21 @@ cleanDatabase().when(function() {
 }).then(function() {
 	return DeleteRelationshipThatDNE_Test();
 }).then(function() {
-	return CheckErrorThrownOnGetEntity_Test();
+	return AddEntityToNonPluralizedIndex_Test();
+}).then(function() {
+	return AddEntityWithNoDefinedKey_Test();
+}).then(function() {
+	return CreateEntityRestrictedByRule_Test();
+}).then(function() {
+	return CreateEntityModifiedByRule_Test();
+}).then(function() {
+	return NewNodeCreatedForRelationshipRestrictedByRule_Test();
+}).then(function() {
+	return NewNodeCreatedForRelationshipModifiedByRule_Test();
+}).then(function() {
+	return GetNodeRestrictedByRule_Test();
+}).then(function() {
+	return GetNodeModifiedByRule_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
@@ -95,8 +109,19 @@ function cleanDatabase() {
 		return sendAndLogDelete('users/223');
 	}).then(function() {
 		return sendAndLogDelete('users/333');
+	}).then(function() {
+		return sendAndLogDelete('people/335');
+	}).then(function() {
+		return sendAndLogDelete('things/336');
 	});
 }
+/* delete everything...
+START n=node(*)
+MATCH n-[r?]-()
+WHERE ID(n) <> 0
+DELETE n,r
+*/
+
 function sendAndLogDelete(url) {
 	console.log("DELETING " + url);
 	return _req.del(url).then(
@@ -155,12 +180,12 @@ function AddNodeWithNoIndex_Test() {
 	).then(function(resp) {
 		var tst = false;
 		try {
-			tst = parseInt(resp.body.id) > 0;
+			tst = parseInt(resp.body.key) > 0;
 		} catch(err) {}
 		if(tst) {
 			Assert.AreEqual(t, expected, "Object with scid > 0");
 		} else {
-			Assert.AreEqual(t, expected, resp.body.id);
+			Assert.AreEqual(t, expected, resp.body.key);
 		}
 	}, function(err) {
 		Assert.AreEqual(t, expected, err.toString());
@@ -596,11 +621,11 @@ function DeleteRelationshipThatDNE_Test() {
 /*
  *	
  */
-function CheckErrorThrownOnGetEntity_Test() {
-	var t = "CheckErrorThrownOnGetEntity_Test";
-	var expected = "You don't have permission to read users where fbid=333";
+function CheckEmptyObjectReturnedOnGetEntity_Test() {
+	var t = "CheckEmptyObjectReturnedOnGetEntity_Test";
+	var expected = "{}";
 	
-	return _req.post('users', {'fbid': 333, 'name': 'samwell'}).then(function(r) {
+	return _req.post('users', {'fbid': 334, 'name': 'piston honda'}).then(function(r) {
 		return _req.get('users/333');
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
@@ -612,14 +637,122 @@ function CheckErrorThrownOnGetEntity_Test() {
 /*
  *	
  */
-function CheckEmptyObjectReturnedOnGetEntity_Test() {
-	var t = "CheckEmptyObjectReturnedOnGetEntity_Test";
-	var expected = "{}";
+function AddEntityToNonPluralizedIndex_Test() {
+	var t = "AddEntityToNonPluralizedIndex_Test";
+	var expected = {'fbid':335, 'fullname': 'glen shellingsworth'};
 	
-	return _req.post('users', {'fbid': 334, 'name': 'piston honda'}).then(function(r) {
-		return _req.get('users/333');
+	return _req.post('people', {'fbid':335, 'fullname': 'glen shellingsworth'}).then(function(r) {
+		return _req.get('people/335');
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function AddEntityWithNoDefinedKey_Test() {
+	var t = "AddEntityWithNoDefinedKey_Test";
+	var expected = 'orange';
+	
+	return _req.post('things', {'color':'orange'}).then(function(r) {
+		return _req.get('things/' + r.body.key);
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body.color);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function CreateEntityRestrictedByRule_Test() {
+	var t = "CreateEntityRestrictedByRule_Test";
+	var expected = 'No green things allowed';
+	
+	return _req.post('things', {'color':'green'}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function CreateEntityModifiedByRule_Test() {
+	var t = "CreateEntityModifiedByRule_Test";
+	var expected = true;
+	
+	return _req.post('things', {'color':'yellow'}).then(function(r) {
+		return _req.get('things/' + r.body.key);
+	}).then(function(r) {
+		var act = (r.body.created && r.body.created.length > 0 ? true : "the 'created' property wasn't added or is empty");
+		Assert.AreEqual(t, expected, act);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function NewNodeCreatedForRelationshipRestrictedByRule_Test() {
+	var t = "NewNodeCreatedForRelationshipRestrictedByRule_Test";
+	var expected = 'That band name sucks';
+	
+	return _req.post('users/101/bands', {'name':'the beef patties'}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function NewNodeCreatedForRelationshipModifiedByRule_Test() {
+	var t = "NewNodeCreatedForRelationshipModifiedByRule_Test";
+	var expected = true;
+	
+	return _req.post('users/101/bands', {'name':'the smokin joes'}).then(function(r) {
+		return _req.get(r.body.connectedEntityUrl);
+	}).then(function(r) {
+		var act = (r.body.created && r.body.created.length > 0 ? true : "the 'created' property wasn't added or is empty");
+		Assert.AreEqual(t, expected, act);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function GetNodeRestrictedByRule_Test() {
+	var t = "GetNodeRestrictedByRule_Test";
+	var expected = "You're not allowed to view red things";
+	
+	return _req.post('things', {'id': 336, 'color': 'red'}).then(function(r) {
+		return _req.get('things/336');
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.toString());
+	});
+}
+
+/*
+ *	
+ */
+function GetNodeModifiedByRule_Test() {
+	var t = "GetNodeModifiedByRule_Test";
+	var expected = "red(modified)";
+	
+	return _req.get('things/336?accesstoken=abc123').then(function(r) {
+		Assert.AreEqual(t, expected, r.body.color);
 	}, function(err) {
 		Assert.AreEqual(t, expected, err.toString());
 	});
