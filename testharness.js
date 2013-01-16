@@ -127,7 +127,7 @@ function sendAndLogDelete(url) {
 	return _req.del(url).then(
 		function() { return Q.fcall(function() { return true; }); },
 		function(err) { 
-			console.log(err);
+			console.log(err.error);
 			return Q.fcall(function() { return true; });
 		}
 	);
@@ -163,7 +163,7 @@ function AddDuplicateNode_Test() {
 	).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -252,7 +252,7 @@ function DeleteNodeThatDNE_Test() {
 	return _req.del('songs/thisnodedne123').then(function(r) {
 		Assert.AreEqual(t, expected, error);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -265,7 +265,7 @@ function UpdateNodeThatDNE_Test() {
 	return _req.put('songs/thisnodedne123', {"doesnt": "matter"}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -278,7 +278,7 @@ function GetNode_Test() {
 	return _req.get('songs/thisnodedne123').then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -307,7 +307,7 @@ function AddConnectionToNewNode_Test() {
 		function(r) {
 			return _req.get('users/101/bands');
 		}, function(err) {
-			Assert.Error(t, err.toString());
+			Assert.Error(t, err.error);
 		}
 	).then(function(r) {
 		bandsResp = r;
@@ -320,7 +320,7 @@ function AddConnectionToNewNode_Test() {
 		};
 		Assert.AreEqual(t, expected, actual);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err.error);
 	});
 }
 
@@ -338,7 +338,7 @@ function UpdateConnectionWithoutRelationshipProperties_Test() {
 			Assert.AreEqual(t, expected, r.body);
 		}
 	}, function(err) {
-		Assert.AreEqual(t, expected, err);
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -371,7 +371,7 @@ function AddConnectionToExistingNode_Test() {
 		};
 		Assert.AreEqual(t, expected, actual);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -404,7 +404,7 @@ function AddConnectionWithProperties_Test() {
 		};
 		Assert.AreEqual(t, expected, actual);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -438,7 +438,7 @@ function AddInboundConnection_Test() {
 		};
 		Assert.AreEqual(t, expected, actual);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -471,7 +471,7 @@ function UpdateExistingConnection_Test() {
 		};
 		Assert.AreEqual(t, expected, actual);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -505,7 +505,7 @@ function AddConnectionBetweenTwoNodesInTheSameIndex_Test() {
 		};
 		Assert.AreEqual(t, expected, actual);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -529,7 +529,7 @@ function GetNodeWithNoIncludedRelationships_Test() {
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -554,7 +554,7 @@ function GetNodeWithIncludedOutboundRelationship_Test() {
 	return _req.get('users/221?include=bands').then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -582,7 +582,7 @@ function GetNodeWithIncludedTwoWayRelationship_Test() {
 	return _req.get('users/221?include=friends,bands').then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.Error(t, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -600,7 +600,7 @@ function DeleteExistingRelationship_Test() {
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -614,7 +614,7 @@ function DeleteRelationshipThatDNE_Test() {
 	return _req.del('users/101/bands/2345').then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -630,7 +630,7 @@ function CheckEmptyObjectReturnedOnGetEntity_Test() {
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -646,7 +646,7 @@ function AddEntityToNonPluralizedIndex_Test() {
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -662,7 +662,7 @@ function AddEntityWithNoDefinedKey_Test() {
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body.color);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -676,7 +676,7 @@ function CreateEntityRestrictedByRule_Test() {
 	return _req.post('things', {'color':'green'}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -693,7 +693,7 @@ function CreateEntityModifiedByRule_Test() {
 		var act = (r.body.created && r.body.created.length > 0 ? true : "the 'created' property wasn't added or is empty");
 		Assert.AreEqual(t, expected, act);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -707,7 +707,7 @@ function NewNodeCreatedForRelationshipRestrictedByRule_Test() {
 	return _req.post('users/101/bands', {'name':'the beef patties'}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -724,7 +724,7 @@ function NewNodeCreatedForRelationshipModifiedByRule_Test() {
 		var act = (r.body.created && r.body.created.length > 0 ? true : "the 'created' property wasn't added or is empty");
 		Assert.AreEqual(t, expected, act);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -740,7 +740,7 @@ function GetNodeRestrictedByRule_Test() {
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -754,7 +754,7 @@ function GetNodeModifiedByRule_Test() {
 	return _req.get('things/336?accesstoken=abc123').then(function(r) {
 		Assert.AreEqual(t, expected, r.body.color);
 	}, function(err) {
-		Assert.AreEqual(t, expected, err.toString());
+		Assert.Error(t, err);
 	});
 }
 
@@ -773,10 +773,10 @@ Assert.AreEqual = function(testName, expected, actual) {
 		console.log("");
 	}
 }
-Assert.Error = function(testName, errMsg) {
+Assert.Error = function(testName, err) {
 	console.log("X " + testName);
 	console.log("");
-	console.log("ERROR: " + errMsg);
+	console.log("ERROR: " + err.stack);
 	console.log("");
 }
 

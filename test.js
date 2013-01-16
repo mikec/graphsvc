@@ -11,22 +11,22 @@ app.addEntity("thing")
    .addConnection("user.friends", "is_friends_with")
    
    .addAccessRule("create", "thing", function(reqInfo, data) {
+		if(!data) return;
 		if(data.color == 'green') throw new Error("No green things allowed");
 		else data.created = new Date().toUTCString();
-		return data;
 	})
 	
-   .addAccessRule("create", "band", function(reqInfo, data) {
+   .addAccessRule("create,update,delete", "band", function(reqInfo, data) {
+		if(!data) return;
 		if(data.name == "the beef patties") throw new Error("That band name sucks");
 		else if(data.name == "the smokin joes") data.created = new Date().toUTCString();
-		return data;
 	})
 	
    .addAccessRule("read", "thing", function(reqInfo, data) {
+		if(!data) return;
 		if(data.color == "red") {
 			if(reqInfo.request.query.accesstoken == "abc123") {
 				data.color = "red(modified)";
-				return data;
 			} else throw new Error("You're not allowed to view red things");
 		}
 	});
