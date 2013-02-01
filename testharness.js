@@ -78,6 +78,12 @@ cleanDatabase().when(function() {
 	return GetNodeRestrictedByRule_Test();
 }).then(function() {
 	return GetNodeModifiedByRule_Test();
+}).then(function() {
+	return GetEntityRestrictedByRuleFromConnection_Test();
+}).then(function() {
+	return TryToCreateRestrictedConnection_Test();
+}).then(function() {
+	return TryToCreateRestrictedInboundConnection_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
@@ -112,7 +118,19 @@ function cleanDatabase() {
 	}).then(function() {
 		return sendAndLogDelete('people/335');
 	}).then(function() {
-		return sendAndLogDelete('things/336');
+		return sendAndLogDelete('things/336?accesstoken=abc123');
+	}).then(function() {
+		return sendAndLogDelete('things/337?accesstoken=abc123');
+	}).then(function() {
+		return sendAndLogDelete('things/338?accesstoken=abc123');
+	}).then(function() {
+		return sendAndLogDelete('things/339?accesstoken=abc123');
+	}).then(function() {
+		return sendAndLogDelete('users/444');
+	}).then(function() {
+		return sendAndLogDelete('bands/445');
+	}).then(function() {
+		return sendAndLogDelete('users/446');
 	});
 }
 /* delete everything...
@@ -325,7 +343,7 @@ function AddConnectionToNewNode_Test() {
 }
 
 /*
- *	Try to add a connection that already exists
+ *	
  */
 function UpdateConnectionWithoutRelationshipProperties_Test() {
 	var t = "UpdateConnectionWithoutRelationshipProperties_Test";
@@ -753,6 +771,62 @@ function GetNodeModifiedByRule_Test() {
 	
 	return _req.get('things/336?accesstoken=abc123').then(function(r) {
 		Assert.AreEqual(t, expected, r.body.color);
+	}, function(err) {
+		Assert.Error(t, err);
+	});
+}
+
+/*
+ *	
+ */
+function GetEntityRestrictedByRuleFromConnection_Test() {
+	var t = "GetEntityRestrictedByRuleFromConnection_Test";
+	var expected = "1 part returned with color='yellow'";
+	
+	return _req.post('things', {'id': 337}).then(function(r) {
+		return _req.post('things/337/parts', {'id':338, 'color':'yellow'});
+	}).then(function(r) {
+		return _req.post('things/337/parts', {'id':339, 'color':'red'});
+	}).then(function(r) {
+		return _req.get('things/337/parts');
+	}).then(function(r) {
+		var parts = r.body;
+		var actual = (parts.length == 1 && parts[0].color == 'yellow') ? expected : false;
+		Assert.AreEqual(t, expected, actual);
+	}, function(err) {
+		Assert.Error(t, err);
+	});
+}
+
+/*
+ *	
+ */
+function TryToCreateRestrictedConnection_Test() {
+	var t = "TryToCreateRestrictedConnection_Test";
+	var expected = "no go";
+	
+	return _req.post('users', {'fbid': 444, 'name':'garcia'}).then(function(r) {
+		return _req.post('bands', {'fbid':445, 'name':'the junktones'});
+	}).then(function(r) {
+		return _req.post('users/444/bands', {'fbid':445, 'relationship': { 'instrument': 'maracas' }});
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.Error(t, err);
+	});
+}
+
+/*
+ *	
+ */
+function TryToCreateRestrictedInboundConnection_Test() {
+	var t = "TryToCreateRestrictedInboundConnection_Test";
+	var expected = "no go";
+	
+	return _req.post('users', {'fbid': 446, 'name':'taylor'}).then(function(r) {
+		return _req.post('bands/445/members', {'fbid':446, 'relationship': { 'instrument': 'maracas' }});
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
 		Assert.Error(t, err);
 	});
