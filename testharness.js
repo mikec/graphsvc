@@ -84,6 +84,10 @@ cleanDatabase().when(function() {
 	return TryToCreateRestrictedConnection_Test();
 }).then(function() {
 	return TryToCreateRestrictedInboundConnection_Test();
+}).then(function() {
+	return TryToCreateRestrictedConnectionForInboundRule_Test();
+}).then(function() {
+	return TryToCreateRestrictedInboundConnectionForInboundRule_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
@@ -131,6 +135,12 @@ function cleanDatabase() {
 		return sendAndLogDelete('bands/445');
 	}).then(function() {
 		return sendAndLogDelete('users/446');
+	}).then(function() {
+		return sendAndLogDelete('users/447');
+	}).then(function() {
+		return sendAndLogDelete('bands/448');
+	}).then(function() {
+		return sendAndLogDelete('users/449');
 	});
 }
 /* delete everything...
@@ -803,7 +813,7 @@ function GetEntityRestrictedByRuleFromConnection_Test() {
  */
 function TryToCreateRestrictedConnection_Test() {
 	var t = "TryToCreateRestrictedConnection_Test";
-	var expected = "no go";
+	var expected = "user[fbid=444] can't play maracas for band[fbid=445]";
 	
 	return _req.post('users', {'fbid': 444, 'name':'garcia'}).then(function(r) {
 		return _req.post('bands', {'fbid':445, 'name':'the junktones'});
@@ -812,7 +822,7 @@ function TryToCreateRestrictedConnection_Test() {
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.Error(t, err);
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 
@@ -821,14 +831,48 @@ function TryToCreateRestrictedConnection_Test() {
  */
 function TryToCreateRestrictedInboundConnection_Test() {
 	var t = "TryToCreateRestrictedInboundConnection_Test";
-	var expected = "no go";
+	var expected = "band[fbid=445] can't let user[fbid=446] play maracas";
 	
 	return _req.post('users', {'fbid': 446, 'name':'taylor'}).then(function(r) {
 		return _req.post('bands/445/members', {'fbid':446, 'relationship': { 'instrument': 'maracas' }});
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
 	}, function(err) {
-		Assert.Error(t, err);
+		Assert.AreEqual(t, expected, err.error);
+	});
+}
+
+/*
+ *	
+ */
+function TryToCreateRestrictedConnectionForInboundRule_Test() {
+	var t = "TryToCreateRestrictedConnectionForInboundRule_Test";
+	var expected = "user[fbid=447] can't play cowbell for band[fbid=448]";
+	
+	return _req.post('users', {'fbid': 447, 'name':'garcia'}).then(function(r) {
+		return _req.post('bands', {'fbid':448, 'name':'the junktones'});
+	}).then(function(r) {
+		return _req.post('users/447/bands', {'fbid':448, 'relationship': { 'instrument': 'cowbell' }});
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.error);
+	});
+}
+
+/*
+ *	
+ */
+function TryToCreateRestrictedInboundConnectionForInboundRule_Test() {
+	var t = "TryToCreateRestrictedInboundConnectionForInboundRule_Test";
+	var expected = "band[fbid=448] can't let user[fbid=449] play cowbell";
+	
+	return _req.post('users', {'fbid': 449, 'name':'taylor'}).then(function(r) {
+		return _req.post('bands/448/members', {'fbid':449, 'relationship': { 'instrument': 'cowbell' }});
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.error);
 	});
 }
 

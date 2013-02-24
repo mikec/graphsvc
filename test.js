@@ -35,11 +35,13 @@ app.addEntity("thing")
    .addAccessRule("create", "user.bands", function(reqInfo, baseEntityData, connectedEntityData, connectionData) {
 		if(!baseEntityData || !connectedEntityData || !connectionData) return;
 		if(baseEntityData.fbid == 444 && connectedEntityData.fbid == 445 && connectionData.instrument == "maracas") throw new Error("user[fbid=444] can't play maracas for band[fbid=445]");
+		if(baseEntityData.fbid == 446 && connectedEntityData.fbid == 445 && connectionData.instrument == "maracas") throw new Error("band[fbid=445] can't let user[fbid=446] play maracas");
 	})
    
    .addAccessRule("create", "band.members", function(reqInfo, baseEntityData, connectedEntityData, connectionData) {
 		if(!baseEntityData || !connectedEntityData || !connectionData) return;
-		if(baseEntityData.fbid == 445 && connectedEntityData.fbid == 446 && connectionData.instrument == "maracas") throw new Error("band[fbid=445] can't let user[fbid=444] play maracas");
+		if(baseEntityData.fbid == 447 && connectedEntityData.fbid == 448 && connectionData.instrument == "cowbell") throw new Error("user[fbid=447] can't play cowbell for band[fbid=448]");
+		if(baseEntityData.fbid == 449 && connectedEntityData.fbid == 448 && connectionData.instrument == "cowbell") throw new Error("band[fbid=448] can't let user[fbid=449] play cowbell");
 	});
 
 /*
