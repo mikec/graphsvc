@@ -6,10 +6,15 @@ app.addEntity("thing")
    .addEntity("user", {"key": "fbid"})
    .addEntity("band", {"key": "fbid"})
    .addEntity("song", {"key": "scid"})
+   .addEntity("genre", {"key": "name"})
    .addEntity("person", {"key": "fbid", "collectionName": "people"})
    .addConnection("user.bands", "band.members", "is_member_of")	
    .addConnection("user.friends", "is_friends_with")
    .addConnection("thing.parts", "has_part")
+   
+   .get('/CurrentTime', function(req, res) {
+		res.send({'current_time': new Date().toUTCString()});
+   })
    
    .addAccessRule("create", "thing", function(reqInfo, entityData) {
 		if(!entityData) return;
