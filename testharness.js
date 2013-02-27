@@ -88,6 +88,8 @@ cleanDatabase().when(function() {
 	return TryToCreateRestrictedConnectionForInboundRule_Test();
 }).then(function() {
 	return TryToCreateRestrictedInboundConnectionForInboundRule_Test();
+}).then(function() {
+	return GetPagedResults_Test();
 }, function(err) {
 	console.log("TESTHARNESS FAILED: " + err);
 }).done();
@@ -141,6 +143,16 @@ function cleanDatabase() {
 		return sendAndLogDelete('bands/448');
 	}).then(function() {
 		return sendAndLogDelete('users/449');
+	}).then(function() {
+		return sendAndLogDelete('users/501');
+	}).then(function() {
+		return sendAndLogDelete('users/502');
+	}).then(function() {
+		return sendAndLogDelete('users/503');
+	}).then(function() {
+		return sendAndLogDelete('users/504');
+	}).then(function() {
+		return sendAndLogDelete('users/505');
 	});
 }
 /* delete everything...
@@ -320,8 +332,8 @@ function AddConnectionToNewNode_Test() {
 	var bandsResp = null;
 	
 	var expected = {
-		"bandsResp": [{'fbid':103, 'name':'the pushpops'}],
-		"membersResp": [{'fbid':101, 'name':'joe'}]
+		"bandsResp": {data:[{'fbid':103, 'name':'the pushpops'}]},
+		"membersResp": {data:[{'fbid':101, 'name':'joe'}]}
 	};
 	return _req.post('users', {'fbid':101, 'name':'joe'}).then(
 		function(r) {
@@ -376,8 +388,8 @@ function UpdateConnectionWithoutRelationshipProperties_Test() {
 function AddConnectionToExistingNode_Test() {
 	var t = "AddConnectionToExistingNode_Test";
 	var expected = {
-		"bandsResp": [{'fbid':104, 'name':'the moves', 'genre':'graphcore'}],
-		"membersResp": [{'fbid':102, 'name':'dave'}]
+		"bandsResp": {data:[{'fbid':104, 'name':'the moves', 'genre':'graphcore'}]},
+		"membersResp": {data:[{'fbid':102, 'name':'dave'}]}
 	};
 	
 	return _req.post('bands', {'fbid':104, 'name':'the moves', 'genre':'graphcore'}).then(
@@ -409,8 +421,8 @@ function AddConnectionToExistingNode_Test() {
 function AddConnectionWithProperties_Test() {
 	var t = "AddConnectionWithProperties_Test";
 	var expected = {
-		"bandsResp": [{'fbid':104, 'name':'the moves', 'genre':'graphcore', 'relationship':{'since':'today','instrument':'drums'}}],
-		"membersResp": [{"name":"dave","fbid":102},{'fbid':103, 'name':'jamal', 'relationship':{'since':'today','instrument':'drums'}}]
+		"bandsResp": {data:[{'fbid':104, 'name':'the moves', 'genre':'graphcore', 'relationship':{'since':'today','instrument':'drums'}}]},
+		"membersResp": {data:[{"name":"dave","fbid":102},{'fbid':103, 'name':'jamal', 'relationship':{'since':'today','instrument':'drums'}}]}
 	};
 	
 	return _req.post('bands', {'fbid':104, 'name':'the moves', 'genre':'graphcore'}).then(
@@ -442,8 +454,8 @@ function AddConnectionWithProperties_Test() {
 function AddInboundConnection_Test() {
 	var t = "AddInboundConnection_Test";
 	var expected = {
-		"bandsResp": [{'fbid':105, 'name':'sunny side up', 'relationship':{'since':'always'}}],
-		"membersResp": [{"name":"george","fbid":111, 'relationship':{'since':'always'}}]
+		"bandsResp": {data:[{'fbid':105, 'name':'sunny side up', 'relationship':{'since':'always'}}]},
+		"membersResp": {data:[{"name":"george","fbid":111, 'relationship':{'since':'always'}}]}
 	};
 	
 	var bandsResp = null;
@@ -476,8 +488,8 @@ function AddInboundConnection_Test() {
 function UpdateExistingConnection_Test() {
 	var t = "UpdateExistingConnection_Test";
 	var expected = {
-		"bandsResp": [{'fbid':105, 'name':'sunny side up', 'relationship':{'since':'a long time', 'comment':'verycool'}}],
-		"membersResp": [{"name":"george","fbid":111, 'relationship':{'since':'a long time', 'comment':'verycool'}}]
+		"bandsResp": {data:[{'fbid':105, 'name':'sunny side up', 'relationship':{'since':'a long time', 'comment':'verycool'}}]},
+		"membersResp": {data:[{"name":"george","fbid":111, 'relationship':{'since':'a long time', 'comment':'verycool'}}]}
 	};
 	
 	var bandsResp = null;
@@ -509,8 +521,8 @@ function UpdateExistingConnection_Test() {
 function AddConnectionBetweenTwoNodesInTheSameIndex_Test() {
 	var t = "AddConnectionBetweenTwoNodesInTheSameIndex_Test";
 	var expected = {
-		"r1": [{'name':'sadie', 'fbid':221, "relationship": { "since":"monday"}}],
-		"r2": [{"name":"jenny", "fbid":222, "relationship": { "since":"monday"}}, {"name":"amy", "fbid":223, "relationship": { "since":"tuesday"}}]
+		"r1": {data:[{'name':'sadie', 'fbid':221, "relationship": { "since":"monday"}}]},
+		"r2": {data:[{"name":"jenny", "fbid":222, "relationship": { "since":"monday"}}, {"name":"amy", "fbid":223, "relationship": { "since":"tuesday"}}]}
 	};
 	
 	var bandsResp = null;
@@ -546,10 +558,8 @@ function GetNodeWithNoIncludedRelationships_Test() {
 	var t = "GetNodeWithNoIncludedRelationships_Test";
 	var expected = {
 		"fbid":221,"name":"sadie",
-		"connections":{
-			"bands":"http://localhost:3000/users/221/bands",
-			"friends":"http://localhost:3000/users/221/friends"
-		}
+		"bands":"http://localhost:3000/users/221/bands",
+		"friends":"http://localhost:3000/users/221/friends"
 	};
 	
 	return _req.post('users/221/bands', {'fbid': 104}).then(function(r) {
@@ -571,12 +581,10 @@ function GetNodeWithIncludedOutboundRelationship_Test() {
 	var t = "GetNodeWithIncludedOutboundRelationship_Test";
 	var expected = {
 		"fbid":221,"name":"sadie",
-		"connections":{
-			"bands":[
-				{"genre":"graphcore","name":"the moves","fbid":104}
-			],
-			"friends":"http://localhost:3000/users/221/friends"
-		}
+		"bands":{data:[
+			{"genre":"graphcore","name":"the moves","fbid":104}
+		]},
+		"friends":"http://localhost:3000/users/221/friends"
 	};
 	
 	return _req.get('users/221?include=bands').then(function(r) {
@@ -596,15 +604,13 @@ function GetNodeWithIncludedTwoWayRelationship_Test() {
 	var t = "GetNodeWithIncludedTwoWayRelationship_Test";
 	var expected = {
 		"fbid":221,"name":"sadie",
-		"connections":{
-			"bands":[
-				{"genre":"graphcore","name":"the moves","fbid":104}
-			],
-			"friends":[
-				{"fbid":222,"name":"jenny","relationship":{"since":"monday"}},
-				{"fbid":223,"name":"amy","relationship":{"since":"tuesday"}}
-			]
-		}
+		"bands":{data:[
+			{"genre":"graphcore","name":"the moves","fbid":104}
+		]},
+		"friends":{data:[
+			{"fbid":222,"name":"jenny","relationship":{"since":"monday"}},
+			{"fbid":223,"name":"amy","relationship":{"since":"tuesday"}}
+		]}
 	};
 	
 	return _req.get('users/221?include=friends,bands').then(function(r) {
@@ -619,7 +625,7 @@ function GetNodeWithIncludedTwoWayRelationship_Test() {
  */
 function DeleteExistingRelationship_Test() {
 	var t = "DeleteExistingRelationship_Test";
-	var expected = [{"name":"the pushpops","fbid":103}];
+	var expected = {data:[{"name":"the pushpops","fbid":103}]};
 	
 	return _req.post('users/101/bands', {'fbid':109, 'name':'flyswatter'}).then(function(r) {
 		return _req.del('users/101/bands/109');
@@ -800,7 +806,7 @@ function GetEntityRestrictedByRuleFromConnection_Test() {
 	}).then(function(r) {
 		return _req.get('things/337/parts');
 	}).then(function(r) {
-		var parts = r.body;
+		var parts = r.body.data;
 		var actual = (parts.length == 1 && parts[0].color == 'yellow') ? expected : false;
 		Assert.AreEqual(t, expected, actual);
 	}, function(err) {
@@ -871,6 +877,31 @@ function TryToCreateRestrictedInboundConnectionForInboundRule_Test() {
 		return _req.post('bands/448/members', {'fbid':449, 'relationship': { 'instrument': 'cowbell' }});
 	}).then(function(r) {
 		Assert.AreEqual(t, expected, r.body);
+	}, function(err) {
+		Assert.AreEqual(t, expected, err.error);
+	});
+}
+
+
+/*
+ *	
+ */
+function GetPagedResults_Test() {
+	var t = "GetPagedResults_Test";
+	var expected = 2;
+	
+	return _req.post('users', {'fbid': 501, 'name':'nunzio pastrami'}).then(function(r) {
+		return _req.post('users/501/friends', {'fbid':502, 'name':'vlata stroganof'});
+	}).then(function(r) {
+		return _req.post('users/501/friends', {'fbid':503, 'name':'pak punjab'});
+	}).then(function(r) {
+		return _req.post('users/501/friends', {'fbid':504, 'name':'paddy macdougal'});
+	}).then(function(r) {
+		return _req.post('users/501/friends', {'fbid':505, 'name':'ji wen'});
+	}).then(function(r) {
+		return _req.get('users/501/friends?limit=2');
+	}).then(function(r) {
+		Assert.AreEqual(t, expected, r.body.data.length);
 	}, function(err) {
 		Assert.AreEqual(t, expected, err.error);
 	});

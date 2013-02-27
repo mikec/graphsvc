@@ -48,6 +48,8 @@ app.addEntity("thing")
 	
 	//pagination
 	
+	//custom functions
+	
 	//documentation
 */
 
