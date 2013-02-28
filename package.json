@@ -1,13 +1,14 @@
 {
   "name": "graphsvc",
-  "version": "0.0.1",
-  "description": "creates a service based on defined entities and relationships, using express and neo4j",
+  "version": "1.0.0",
+  "description": "A graph web service development framework for node.js and neo4j.",
   "keywords": [
-    "graph"
+    "graph", "neo4j", "service"
   ],
   "author": {
     "name": "Mike Calvanese",
-    "email": "mfcalvanese@gmail.com"
+    "email": "mfcalvanese@gmail.com",
+	"url": "http://mfcalvanese.tumblr.com"
   },
   "dependencies": {
 	"express": "3.0.5",

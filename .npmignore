@@ -10,3 +10,5 @@ support/
 test/
 .DS_Store
 coverage.html
+test.js
+testharness.js
