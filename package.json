@@ -1,6 +1,6 @@
 {
   "name": "graphsvc",
-  "version": "1.0.0",
+  "version": "v1.0.0",
   "description": "A graph web service development framework for node.js and neo4j.",
   "keywords": [
     "graph", "neo4j", "service"
@@ -20,5 +20,9 @@
   "main": "index",
   "engines": {
     "node": ">=0.8.16"
+  },
+  "repository" :
+  { "type" : "git"
+  , "url" : "http://github.com/mfcalvanese/graphsvc"
   }
 }
