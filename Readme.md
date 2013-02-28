@@ -12,16 +12,16 @@ You will also need to run an instance of the [neo4j](http://neo4j.org) graph dat
 
 Configure the service
 
-	```js
-	//myservice.js
+```js
+//myservice.js
 
-	graphsvc = require('graphsvc');
-	var svc = graphsvc("http://localhost:7474");
+graphsvc = require('graphsvc');
+var svc = graphsvc("http://localhost:7474");
 
-	svc.addEntity("person").addEntity("place").addEntity("thing");
+svc.addEntity("person").addEntity("place").addEntity("thing");
 
-	svc.listen("3000");
-	```
+svc.listen("3000");
+```
 
 Run the service
 
@@ -29,21 +29,21 @@ Run the service
 
 Post data
 
-	```console
-	$ curl -H 'Content-Type: application/json' 
-	       -X POST 'http://localhost:3000/places' 
-		   -d '{"name":"krunkville", "state":"minnesota"}'
-	
-	### => { "key": "1395", "url": "http://localhost:3000/places/1395" }
-	```
+```console
+$ curl -H 'Content-Type: application/json' 
+	   -X POST 'http://localhost:3000/places' 
+	   -d '{"name":"krunkville", "state":"minnesota"}'
+
+### => { "key": "1395", "url": "http://localhost:3000/places/1395" }
+```
 	
 Get data
 
-	```console
-	http://localhost:3000/places/1395
-	
-	### => { "id": "1395", "name": "krunkville", "state": "minnesota" }
-	```
+```console
+http://localhost:3000/places/1395
+
+### => { "id": "1395", "name": "krunkville", "state": "minnesota" }
+```
 
 ## Features
 
