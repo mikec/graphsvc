@@ -1,6 +1,6 @@
 # graphsvc
 
-A graph web service development framework for node.js and neo4j.
+A graph web service development framework for [node.js](nodejs.org) and [neo4j](neo4j.org)
 
 ## Installation
 
@@ -8,9 +8,11 @@ A graph web service development framework for node.js and neo4j.
 	
 You will also need to run an instance of the [neo4j](http://neo4j.org) graph database.
 
-## Nutshell
+## Quick Start
 
-Configure the service
+graphsvc lets you develop graph web services on top of [neo4j](neo4j.org).  It extends the [express](http://expressjs.com) framework.  Here's a simple example.
+
+1. Configure the service
 
 ```js
 //myservice.js
@@ -18,16 +20,16 @@ Configure the service
 graphsvc = require('graphsvc');
 var svc = graphsvc("http://localhost:7474");
 
-svc.addEntity("person").addEntity("place").addEntity("thing");
+svc.endpoint("person").endpoint("place").endpoint("thing");
 
 svc.listen("3000");
 ```
 
-Run the service
+2. Run the service
 
 	$ node myservice.js
 
-Post data
+3. Post some data to the service
 
 ```console
 $ curl -H 'Content-Type: application/json' 
@@ -37,7 +39,7 @@ $ curl -H 'Content-Type: application/json'
 ### => { "key": "1395", "url": "http://localhost:3000/places/1395" }
 ```
 	
-Get data
+4. Get the data back from the service
 
 ```console
 http://localhost:3000/places/1395
@@ -45,9 +47,12 @@ http://localhost:3000/places/1395
 ### => { "id": "1395", "name": "krunkville", "state": "minnesota" }
 ```
 
-## Features
+## Guide
 
-  * Extends the [Express](http://github.com/visionmedia/express) framework
-  * Simple service endpoint configuration
-  * Automatic neo4j index creation
-  *
+### Sub Item 1
+
+asdflkjsdflkjj
+
+### Sub Item 2
+
+asddfasdffsadf
