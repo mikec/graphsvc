@@ -53,7 +53,7 @@ After configuring endpoints, you can send POST, PUT, GET, or DELETE requests to 
 
 ### Configuring an Entity Endpoint
 
-Entity endpoints are configured using .endpoint()
+Entity endpoints are configured using **.endpoint()**
 
 ```js
 svc.endpoint('person');
@@ -79,17 +79,17 @@ svc.endpoint('person', {'key': 'name'});
 
 ### POST to an Entity Endpoint
 
-Issuing a POST request to an entity endpoint will create a new entity.  If a value for the *key* property is not supplied in your POST data, the *key* value will be auto-generated.  Any number of properties can be included with the POST request.
+Issuing a POST request to an entity endpoint will create a new entity.  If a value for the *key* property is not supplied in your POST data, the *key* value will be auto-generated.
 
 ```console
-# Example 1: add '{"name: "mike", "status": "awesome"}' to a /people endpoint with the key 'name'
+## Example 1: add '{"name: "mike", "status": "awesome"}' to a /people endpoint with the key 'name'
 
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike", "status": "awesome"}' -H 'Content-Type: application/json'
 ## => { "key": "mike", "url": "http://localhost:3000/people/mike" }
 
 
-# Example 2: add '{"name": "mike"}' to a /people endpoint with the default key.  
-#            the 12345 in the response represents the auto-generated key value.
+## Example 2: add '{"name": "mike"}' to a /people endpoint with the default key.  
+##            the 12345 in the response represents the auto-generated key value.
 
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike"}' -H 'Content-Type: application/json'
 ## => { "key": "12345", "url": "http://localhost:3000/people/12345" }
@@ -101,7 +101,7 @@ $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike"}' -H 'Content-
 Issuing a GET request to an entity endpoint gets an entity.  GET requests must be issued to */[endpoint]/[key_value]*
 
 ```console
-# Example: Get an entity with a key value of 'mike' from the /people endpoint.
+## Example: Get an entity with a key value of 'mike' from the /people endpoint.
 
 $ curl -X GET 'http://localhost:3000/people/mike'
 ## => { "name": "mike", "status": "awesome" }
@@ -112,13 +112,13 @@ $ curl -X GET 'http://localhost:3000/people/mike'
 Issuing a PUT request to an entity endpoint will modify an entity.  Entity properties can be added, modified, or deleted.
 
 ```console
-# Add an *age* property to an entity
+## Add an *age* property to an entity
 $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", "63"}' -H 'Content-Type: application/json'
 
-# Modify the *age* property
+## Modify the *age* property
 $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", "29"}' -H 'Content-Type: application/json'
 
-# Delete the *age* property
+## Delete the *age* property
 $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", null}' -H 'Content-Type: application/json'
 ```
 
@@ -127,6 +127,11 @@ $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", null}' -H 'Content
 Issuing a DELETE request to an entity endpoint will delete the entity.
 
 ```console
-# Delete an entity
+## Delete an entity
 $ curl -X DELETE 'http://localhost:3000/people/mike'
+
+### Configuring a Connection Endpoint
+
+Connection endpoints are configured using **.endpoint()**
+
 
