@@ -35,14 +35,14 @@ Post some data to the service
 
 ```console
 $ curl -X POST 'http://localhost:3000/places' -d '{"name":"krunkville", "state":"minnesota"}' -H 'Content-Type: application/json'
-# => { "key": "1395", "url": "http://localhost:3000/places/1395" }
+## => { "key": "1395", "url": "http://localhost:3000/places/1395" }
 ```
 	
 Get the data back from the service
 
 ```console
 $ curl -X GET 'http://localhost:3000/places/1395'
-# => { "id": "1395", "name": "krunkville", "state": "minnesota" }
+## => { "id": "1395", "name": "krunkville", "state": "minnesota" }
 ```
 
 ## How to use it
@@ -51,15 +51,13 @@ graphsvc allows you to create service endpoints that represent entities (*person
 
 After configuring endpoints, you can send POST, PUT, GET, or DELETE requests to them to add, modify, read, or delete data. 
 
-### Configuring an entity endpoint
+### Configuring an Entity Endpoint
 
 Entity endpoints are configured using .endpoint()
 
 ```js
 svc.endpoint('person');
 ```
-
-#### Endpoint Pluralization
 
 Entity endpoint names are pluralized by default, so the endpoint in this case would be
 
@@ -72,8 +70,6 @@ To override pluralization, include a *collectionName* value in configuration opt
 ```js
 svc.endpoint('person', {'collectionName': 'people'});
 ```
-
-#### Key Property
 
 Data added to entity endpoints is indexed by a key property.  The default key property is *id*.  To override this, include a *key* value in configuration options
 
@@ -89,13 +85,14 @@ Issuing a POST request to an entity endpoint will create a new entity.  If a val
 # Example 1: add '{"name: "mike", "status": "awesome"}' to a /people endpoint with the key 'name'
 
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike", "status": "awesome"}' -H 'Content-Type: application/json'
-# => { "key": "mike", "url": "http://localhost:3000/people/mike" }
+## => { "key": "mike", "url": "http://localhost:3000/people/mike" }
 
 
-# Example 2: add '{"name": "mike"}' to a /people endpoint with the default key.  The 12345 in the response represents the auto-generated key value
+# Example 2: add '{"name": "mike"}' to a /people endpoint with the default key.  
+#            the 12345 in the response represents the auto-generated key value.
 
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike"}' -H 'Content-Type: application/json'
-# => { "key": "12345", "url": "http://localhost:3000/people/12345" }
+## => { "key": "12345", "url": "http://localhost:3000/people/12345" }
 ```
 
 
@@ -107,7 +104,7 @@ Issuing a GET request to an entity endpoint gets an entity.  GET requests must b
 # Example: Get an entity with a key value of 'mike' from the /people endpoint.
 
 $ curl -X GET 'http://localhost:3000/people/mike'
-# => { "name": "mike", "status, "awesome" }
+## => { "name": "mike", "status": "awesome" }
 ```
 
 ### PUT to an Entity Endpoint
@@ -132,14 +129,4 @@ Issuing a DELETE request to an entity endpoint will delete the entity.
 ```console
 # Delete an entity
 $ curl -X DELETE 'http://localhost:3000/people/mike'
-
-## API
-
-### graphsvc(neo4j_url)
-
-Returns an instance of graphsvc, given the URL of a neo4j REST API service.
-
-### .endpoint(arg1, arg2, arg3)
-
-Creates a new entity or connection endpoint.
 
