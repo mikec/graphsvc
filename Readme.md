@@ -35,7 +35,7 @@ Post some data to the service
 
 ```console
 $ curl -X POST 'http://localhost:3000/places' -d '{"name":"krunkville", "state":"minnesota"}' -H 'Content-Type: application/json'
-# { "key": "1395", "url": "http://localhost:3000/places/1395" }
+{ "key": "1395", "url": "http://localhost:3000/places/1395" }
 ```
 	
 Get the data back from the service
@@ -85,14 +85,14 @@ Issuing a POST request to an entity endpoint will create a new entity.  If a val
 ## Example 1: add '{"name: "mike", "status": "awesome"}' to a /people endpoint with the key 'name'
 
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike", "status": "awesome"}' -H 'Content-Type: application/json'
-## => { "key": "mike", "url": "http://localhost:3000/people/mike" }
+{ "key": "mike", "url": "http://localhost:3000/people/mike" }
 
 
 ## Example 2: add '{"name": "mike"}' to a /people endpoint with the default key.  
 ##            the 12345 in the response represents the auto-generated key value.
 
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike"}' -H 'Content-Type: application/json'
-## => { "key": "12345", "url": "http://localhost:3000/people/12345" }
+{ "key": "12345", "url": "http://localhost:3000/people/12345" }
 ```
 
 
@@ -104,7 +104,7 @@ Issuing a GET request to an entity endpoint gets an entity.  GET requests must b
 ## Example: Get an entity with a key value of 'mike' from the /people endpoint.
 
 $ curl -X GET 'http://localhost:3000/people/mike'
-## => { "name": "mike", "status": "awesome" }
+{ "name": "mike", "status": "awesome" }
 ```
 
 ### PUT to an Entity Endpoint
@@ -129,6 +129,7 @@ Issuing a DELETE request to an entity endpoint will delete the entity.
 ```console
 ## Delete an entity
 $ curl -X DELETE 'http://localhost:3000/people/mike'
+```
 
 ### Configuring a Connection Endpoint
 
