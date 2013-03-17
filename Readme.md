@@ -47,7 +47,7 @@ $ curl -X GET 'http://localhost:3000/places/1395'
 
 ## How to use it
 
-graphsvc allows you to create service endpoints that represent entities (\*person\*, *place*, *widget*, etc), and service endpoints that represent connections between entities (*person.friends*, *place.visitors*, *widget.parts*).
+graphsvc allows you to create service endpoints that represent entities (_person_, *place*, *widget*, etc), and service endpoints that represent connections between entities (*person.friends*, *place.visitors*, *widget.parts*).
 
 After configuring endpoints, you can send POST, PUT, GET, or DELETE requests to them to add, modify, read, or delete data. 
 
