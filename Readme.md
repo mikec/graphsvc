@@ -35,14 +35,14 @@ Post some data to the service
 
 ```console
 $ curl -X POST 'http://localhost:3000/places' -d '{"name":"krunkville", "state":"minnesota"}' -H 'Content-Type: application/json'
-## => { "key": "1395", "url": "http://localhost:3000/places/1395" }
+# { "key": "1395", "url": "http://localhost:3000/places/1395" }
 ```
 	
 Get the data back from the service
 
 ```console
 $ curl -X GET 'http://localhost:3000/places/1395'
-## => { "id": "1395", "name": "krunkville", "state": "minnesota" }
+{ "id": "1395", "name": "krunkville", "state": "minnesota" }
 ```
 
 ## How to use it
