@@ -65,13 +65,13 @@ Entity endpoint names are pluralized by default, so the endpoint in this case wo
 http://localhost:3000/persons
 ```
 
-To override pluralization, include a *collectionName* value in configuration options
+To override pluralization, include a **collectionName** value in configuration options
 
 ```js
 svc.endpoint('person', {'collectionName': 'people'});
 ```
 
-Data added to entity endpoints is indexed by a key property.  The default key property is *id*.  To override this, include a *key* value in configuration options
+Data added to entity endpoints is indexed by a key property.  The default key property is **id**.  To override this, include a **key** value in configuration options
 
 ```js
 svc.endpoint('person', {'key': 'name'});
@@ -79,46 +79,43 @@ svc.endpoint('person', {'key': 'name'});
 
 ### POST to an Entity Endpoint
 
-Issuing a POST request to an entity endpoint will create a new entity.  If a value for the *key* property is not supplied in your POST data, the *key* value will be auto-generated.
+Issuing a POST request to an entity endpoint will create a new entity.  Supplying a value for the **key** property is optional.
 
 ```console
-## Example 1: add '{"name: "mike", "status": "awesome"}' to a /people endpoint with the key 'name'
-
+## Example 1: POST to /people endpoint with a value for the key 'name'
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike", "status": "awesome"}' -H 'Content-Type: application/json'
 { "key": "mike", "url": "http://localhost:3000/people/mike" }
 
 
-## Example 2: add '{"name": "mike"}' to a /people endpoint with the default key.  
-##            the 12345 in the response represents the auto-generated key value.
-
-$ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike"}' -H 'Content-Type: application/json'
+## Example 2: POST to /people endpoint without a value for the key 'name'
+## 12345 is the auto-generated value for the 'name' key
+$ curl -X POST 'http://localhost:3000/people' -d '{"status": "mike"}' -H 'Content-Type: application/json'
 { "key": "12345", "url": "http://localhost:3000/people/12345" }
 ```
 
 
 ### GET to an Entity Endpoint
 
-Issuing a GET request to an entity endpoint gets an entity.  GET requests must be issued to */[endpoint]/[key_value]*
+Issuing a GET request to an entity endpoint gets an entity
 
 ```console
-## Example: Get an entity with a key value of 'mike' from the /people endpoint.
-
+## Example: Get an entity with a key value of 'mike' from the /people endpoint
 $ curl -X GET 'http://localhost:3000/people/mike'
 { "name": "mike", "status": "awesome" }
 ```
 
 ### PUT to an Entity Endpoint
 
-Issuing a PUT request to an entity endpoint will modify an entity.  Entity properties can be added, modified, or deleted.
+Issuing a PUT request to an entity endpoint will modify an entity
 
 ```console
-## Add an *age* property to an entity
+## Add an 'age' property to an entity
 $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", "63"}' -H 'Content-Type: application/json'
 
-## Modify the *age* property
+## Modify the 'age' property
 $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", "29"}' -H 'Content-Type: application/json'
 
-## Delete the *age* property
+## Delete the 'age' property
 $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", null}' -H 'Content-Type: application/json'
 ```
 
