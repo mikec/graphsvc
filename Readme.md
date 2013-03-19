@@ -10,7 +10,7 @@ You will also need to run an instance of the [neo4j](http://neo4j.org) graph dat
 
 ## Quick Start
 
-graphsvc lets you develop graph web services on top of [neo4j](neo4j.org).  It extends the [express](http://expressjs.com) framework.  Here's a simple example:
+graphsvc lets you develop graph web services on top of [neo4j](http://neo4j.org).  It extends the [express](http://expressjs.com) framework.  Here's a simple example:
 
 Configure the service
 
@@ -53,7 +53,7 @@ After configuring endpoints, you can send POST, PUT, GET, or DELETE requests to 
 
 ### Configuring an Entity Endpoint
 
-Entity endpoints are configured using **.endpoint()**
+Entity endpoints are configured by using **.endpoint()**
 
 ```js
 svc.endpoint('person');
@@ -82,12 +82,12 @@ svc.endpoint('person', {'key': 'name'});
 Issuing a POST request to an entity endpoint will create a new entity.  Supplying a value for the **key** property is optional.
 
 ```console
-## Example 1: POST to /people endpoint with a value for the key 'name'
+## POST to /people endpoint with a value for the key 'name'
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike", "status": "awesome"}' -H 'Content-Type: application/json'
 { "key": "mike", "url": "http://localhost:3000/people/mike" }
 
 
-## Example 2: POST to /people endpoint without a value for the key 'name'
+## POST to /people endpoint without a value for the key 'name'
 ## 12345 is the auto-generated value for the 'name' key
 $ curl -X POST 'http://localhost:3000/people' -d '{"status": "mike"}' -H 'Content-Type: application/json'
 { "key": "12345", "url": "http://localhost:3000/people/12345" }
@@ -99,7 +99,7 @@ $ curl -X POST 'http://localhost:3000/people' -d '{"status": "mike"}' -H 'Conten
 Issuing a GET request to an entity endpoint gets an entity
 
 ```console
-## Example: Get an entity with a key value of 'mike' from the /people endpoint
+## Get an entity with a key value of 'mike' from the /people endpoint
 $ curl -X GET 'http://localhost:3000/people/mike'
 { "name": "mike", "status": "awesome" }
 ```
@@ -109,11 +109,8 @@ $ curl -X GET 'http://localhost:3000/people/mike'
 Issuing a PUT request to an entity endpoint will modify an entity
 
 ```console
-## Add an 'age' property to an entity
+## Add or modify the 'age' property
 $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", "63"}' -H 'Content-Type: application/json'
-
-## Modify the 'age' property
-$ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", "29"}' -H 'Content-Type: application/json'
 
 ## Delete the 'age' property
 $ curl -X PUT 'http://localhost:3000/people/mike' -d '{"age", null}' -H 'Content-Type: application/json'
@@ -130,6 +127,31 @@ $ curl -X DELETE 'http://localhost:3000/people/mike'
 
 ### Configuring a Connection Endpoint
 
-Connection endpoints are configured using **.endpoint()**
+Like entity endpoints, connection endpoints are also configured using **.endpoint()*
 
+The following code configures a connection between people and places, where a person can have many destinations (places) and a place can have many visitors (people).  The name of the connection is 'has_been_to', as in person 'has_been_to' place.  This assumes that the 'person' and 'place' entity endpoints have already been configured.
 
+```js
+// configures a connection between people and places
+svc.endpoint('person.destinations', 'place.visitors', 'has_been_to');
+```
+
+Connections can also be configured between similar entities. The following code configures a connection between people and other people, where a person can have many friends (people).
+
+```js
+// configures a connection between people and other people
+svc.endpoint('person.friends', 'is_friends_with');
+```
+
+### POST to a Connection Endpoint
+
+Issuing a POST request to a connection endpoint will create a new connection between two entities.
+
+```console
+## Add a connection between a person and a place: a destination
+curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"city":"New York"}'  -H 'Content-Type: application/json'
+{
+  "connectedEntityKey": "12345",
+  "connectedEntityUrl": "places/12345"
+}
+```
