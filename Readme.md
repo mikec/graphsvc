@@ -35,14 +35,21 @@ Post some data to the service
 
 ```console
 $ curl -X POST 'http://localhost:3000/places' -d '{"name":"krunkville", "state":"minnesota"}' -H 'Content-Type: application/json'
-{ "key": "1395", "url": "http://localhost:3000/places/1395" }
+{ 
+	"key": "1395", 
+	"url": "http://localhost:3000/places/1395" 
+}
 ```
 	
 Get the data back from the service
 
 ```console
 $ curl -X GET 'http://localhost:3000/places/1395'
-{ "id": "1395", "name": "krunkville", "state": "minnesota" }
+{ 
+	"id": "1395", 
+	"name": "krunkville", 
+	"state": "minnesota" 
+}
 ```
 
 ## How to use it
@@ -84,13 +91,19 @@ Issuing a POST request to an entity endpoint will create a new entity.  Supplyin
 ```console
 ## POST to /people endpoint with a value for the key 'name'
 $ curl -X POST 'http://localhost:3000/people' -d '{"name": "mike", "status": "awesome"}' -H 'Content-Type: application/json'
-{ "key": "mike", "url": "http://localhost:3000/people/mike" }
+{ 
+	"key": "mike", 
+	"url": "http://localhost:3000/people/mike" 
+}
 
 
 ## POST to /people endpoint without a value for the key 'name'
 ## 12345 is the auto-generated value for the 'name' key
 $ curl -X POST 'http://localhost:3000/people' -d '{"status": "mike"}' -H 'Content-Type: application/json'
-{ "key": "12345", "url": "http://localhost:3000/people/12345" }
+{ 
+	"key": "12345", 
+	"url": "http://localhost:3000/people/12345" 
+}
 ```
 
 
@@ -101,7 +114,10 @@ Issuing a GET request to an entity endpoint gets an entity
 ```console
 ## Get an entity with a key value of 'mike' from the /people endpoint
 $ curl -X GET 'http://localhost:3000/people/mike'
-{ "name": "mike", "status": "awesome" }
+{ 
+	"name": "mike", 
+	"status": "awesome" 
+}
 ```
 
 ### PUT to an Entity Endpoint
@@ -127,31 +143,68 @@ $ curl -X DELETE 'http://localhost:3000/people/mike'
 
 ### Configuring a Connection Endpoint
 
-Like entity endpoints, connection endpoints are also configured using **.endpoint()*
+Like entity endpoints, connection endpoints are also configured using *.endpoint()*
 
-The following code configures a connection between people and places, where a person can have many destinations (places) and a place can have many visitors (people).  The name of the connection is 'has_been_to', as in person 'has_been_to' place.  This assumes that the 'person' and 'place' entity endpoints have already been configured.
+The following code configures a 'has_been_to' connection between people and places, where a person can have many destinations (places) and a place can have many visitors (people)
 
 ```js
 // configures a connection between people and places
 svc.endpoint('person.destinations', 'place.visitors', 'has_been_to');
 ```
 
-Connections can also be configured between similar entities. The following code configures a connection between people and other people, where a person can have many friends (people).
+This configuration will create these endpoints
+
+```console
+http://localhost:3000/people/[person_key_value]/destinations
+http://localhost:3000/places/[place_key_value]/visitors
+```
+
+Connections can also be configured for similar entities. The following code configures an 'is_friends_with' connection where a person can have many friends (people).
 
 ```js
 // configures a connection between people and other people
 svc.endpoint('person.friends', 'is_friends_with');
 ```
 
+This configuration will create only one endpoint
+
+```console
+http://localhost:3000/people/[person_key_value]/friends
+```
+
 ### POST to a Connection Endpoint
 
 Issuing a POST request to a connection endpoint will create a new connection between two entities.
 
+The following command will create a connection between the person 'mike' and a place 'New York'.  New York will become one of mike's destinations, and mike will become one of New York's visitors.
+
 ```console
-## Add a connection between a person and a place: a destination
+## add the city 'New York' to mike's destinations
 curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"city":"New York"}'  -H 'Content-Type: application/json'
 {
   "connectedEntityKey": "12345",
   "connectedEntityUrl": "places/12345"
 }
 ```
+
+In this case, the connected entity (New York) did not exist so it was automatically created.  It's auto-generated key (12345) was returned in the response.
+
+To connect an entity that already exists, include the entity's key in the POST data
+
+```console
+## add the city 'New York' with the key '12345' to mike's destinations
+curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"id":"12345", "city":"New York"}'  -H 'Content-Type: application/json'
+```
+
+To include properties on the connection itself, include a **relationship** object in the POST data
+
+```console
+## add the city 'New York' to mike's destinations, and give this connection a 'visitDate' of 'March 17th'
+curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"city":"New York", "relationship":{"visitDate":"March 17th"}}'  -H 'Content-Type: application/json'
+{
+  "connectedEntityKey": "12345",
+  "connectedEntityUrl": "places/12345"
+}
+```
+
+### GET to a Connection Endpoint
