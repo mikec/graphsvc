@@ -60,7 +60,7 @@ After configuring endpoints, you can send POST, PUT, GET, or DELETE requests to 
 
 ### Configuring an Entity Endpoint
 
-Entity endpoints are configured by using **.endpoint()**
+Entity endpoints are configured using **.endpoint()**
 
 ```js
 svc.endpoint('person');
@@ -180,7 +180,7 @@ The following command will create a connection between the person 'mike' and a p
 
 ```console
 ## add the city 'New York' to mike's destinations
-curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"city":"New York"}'  -H 'Content-Type: application/json'
+$ curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"city":"New York"}'  -H 'Content-Type: application/json'
 {
   "connectedEntityKey": "12345",
   "connectedEntityUrl": "places/12345"
@@ -193,14 +193,14 @@ To connect an entity that already exists, include the entity's key in the POST d
 
 ```console
 ## add the city 'New York' with the key '12345' to mike's destinations
-curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"id":"12345", "city":"New York"}'  -H 'Content-Type: application/json'
+$ curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"id":"12345", "city":"New York"}'  -H 'Content-Type: application/json'
 ```
 
 To include properties on the connection itself, include a **relationship** object in the POST data
 
 ```console
 ## add the city 'New York' to mike's destinations, and give this connection a 'visitDate' of 'March 17th'
-curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"city":"New York", "relationship":{"visitDate":"March 17th"}}'  -H 'Content-Type: application/json'
+$ curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"city":"New York", "relationship":{"visitDate":"March 17th"}}'  -H 'Content-Type: application/json'
 {
   "connectedEntityKey": "12345",
   "connectedEntityUrl": "places/12345"
@@ -208,3 +208,4 @@ curl -X POST 'http://localhost:3000/people/mike/destinations' -d '{"city":"New Y
 ```
 
 ### GET to a Connection Endpoint
+
