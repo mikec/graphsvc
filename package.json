@@ -1,6 +1,6 @@
 {
   "name": "graphsvc",
-  "version": "v1.0.0",
+  "version": "v1.1.0",
   "description": "A graph web service development framework for node.js and neo4j.",
   "keywords": [
     "graph", "neo4j", "service"
