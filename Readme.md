@@ -1,7 +1,7 @@
 graphsvc
 ========
 
-graphsvc makes it easy to build graph services. It runs on [node.js](http://nodejs.org) and extends the [express](http://expressjs.com) framework. It uses [neo4j](http://neo4j.org) on the backend.
+graphsvc makes it super easy to create an API for consuming and modifying your graph data. It runs on [node.js](http://nodejs.org) and extends the [express](http://expressjs.com) framework. It uses [neo4j](http://neo4j.org) as a datasource.
 
 
 Installation
@@ -14,6 +14,8 @@ You will also need to run an instance of [neo4j](http://neo4j.org).
 
 Overview
 --------
+
+Imagine that you want to create a simple service to track relationships between users and places...
 
 graphsvc works by letting you configure service endpoints. Each endpoint represents either an *entity* or a *connection* between entities.
 
