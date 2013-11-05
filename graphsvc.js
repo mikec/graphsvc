@@ -163,12 +163,22 @@ GraphSvc.prototype.getConnections = function(indexName) {
 		var connections = [];
 		for(var i in conns) {
 			var c = conns[i];
+
+			// add inbound path connection for entities with the same start/end type, but different paths
+			if(c.start.index == c.end.index && c.inboundPath != c.outboundPath) {
+				connections.push({
+					urlName: c.end.connection,
+					relationshipName: c.relationshipName,
+					dir: 'in'
+				});
+			}
+
 			var connObj = {
-				"urlName": (c.start.index == indexName ? c.start.connection : c.end.connection),
-				"relationshipName": c.relationshipName
+				urlName: (c.start.index == indexName ? c.start.connection : c.end.connection),
+				relationshipName: c.relationshipName
 			}
 			var dir = (c.start.index == indexName ? "out" : "in");
-			if(c.start.index == c.end.index) dir = "all";
+			if(c.inboundPath == c.outboundPath) dir = "all";
 			connObj.dir = dir;
 			connections.push(connObj);
 		}
@@ -526,6 +536,7 @@ GraphSvc.prototype.getNodeKeyValue = function(nodeData, indexName) {
 GraphSvc.prototype.getRelatedNodes = function(nodeKeyValue, nodeIndex, relationshipName, options) {
 	var $this = this;
 
+	if(!options) options = {};
 	options.runBefores = (options.runBefores == false ? false : true);
 	options.runAfters = (options.runAfters == false ? false : true);
 	options.graphRequest = (options.graphRequest ? options.graphRequest : null);
@@ -538,7 +549,13 @@ GraphSvc.prototype.getRelatedNodes = function(nodeKeyValue, nodeIndex, relations
 	var inConn = _.find(this.connections, function(itm) {
 		return itm.end.index == nodeIndex && itm.relationshipName == relationshipName;
 	});
-	dir = (outConn && inConn ? 'all' : (inConn ? 'in' : 'out'));
+
+	var dir;
+	if(!options.direction) {
+		dir = (outConn && inConn ? 'all' : (inConn ? 'in' : 'out'));
+	} else {
+		dir = options.direction;
+	}
 	var relatedEntityName = (dir == 'out' || dir == 'all' ? outConn.end.entity.name : inConn.start.entity.name);
 
 	var dir1 = ((dir == "in" || dir == "all") ? '<-' : '-');
@@ -626,17 +643,22 @@ GraphSvc.prototype.deleteRelationship = function(startNodeIndex, startNodeKeyVal
 }
 
 //creates a new relationship
-GraphSvc.prototype.createRelationship = function(startNodeIndex, startNodeKey, endNodeIndex, endNodeData, relationshipData, relationshipName) {
+GraphSvc.prototype.createRelationship = function(startNodeIndex, startNodeKey, endNodeIndex, endNodeData, relationshipData, relationshipName, direction) {
 	var $this = this;
 
 	// get the direction of the connection
-	var outConn = _.find(this.connections, function(itm) {
-		return itm.start.index == startNodeIndex && itm.relationshipName == relationshipName;
-	});
-	var inConn = _.find(this.connections, function(itm) {
-		return itm.end.index == startNodeIndex && itm.relationshipName == relationshipName;
-	});
-	dir = (outConn && inConn ? 'all' : (inConn ? 'in' : 'out'));
+	var dir;
+	if(!direction) {
+		var outConn = _.find(this.connections, function(itm) {
+			return itm.start.index == startNodeIndex && itm.relationshipName == relationshipName;
+		});
+		var inConn = _.find(this.connections, function(itm) {
+			return itm.end.index == startNodeIndex && itm.relationshipName == relationshipName;
+		});
+		dir = (outConn && inConn ? 'all' : (inConn ? 'in' : 'out'));
+	} else {
+		dir = direction;
+	}
 	
 	var to = (dir == "out" || dir == "all");
 	
@@ -797,7 +819,8 @@ GraphSvc.prototype.getEntity = function(keyValue, indexName, options) {
 						return $this.getRelatedNodes(keyValue, indexName, connObj.relationshipName, {
 								skip: options.skip, 
 								limit: options.limit,
-								graphRequest: options.graphRequest
+								graphRequest: options.graphRequest,
+								direction: connObj.dir
 							})
 							.then(function(relatedNodes) {
 								nodeData[connObj.urlName] = {
@@ -1103,6 +1126,13 @@ function connectionCreateHandler(req, res) {
 	
 	var endNode = ((graphReq.connection.direction == "out" || graphReq.connection.direction == "all") ? graphReq.connection.end : graphReq.connection.start);
 	
+	// have to set direction explicitly for connections with the same start/end entity but different path names
+	var explicitDir = null;
+	if(graphReq.connection.start.index == graphReq.connection.end.index &&
+	   graphReq.connection.inboundPath != graphReq.connection.outboundPath) {
+		explicitDir = graphReq.connection.direction;
+	}
+
 	__app.createConnection(
 		graphReq.index, 
 		req.params.keyvalue, 
@@ -1112,7 +1142,8 @@ function connectionCreateHandler(req, res) {
 		{
 			runBefores: true,
 			runAfters: true,
-			graphRequest: graphReq
+			graphRequest: graphReq,
+			direction: explicitDir
 		}
 	).then(function(r) {
 		res.send(r);
@@ -1175,7 +1206,8 @@ GraphSvc.prototype.createConnection = function(baseEntityIndexName, baseEntityKe
 			connEntityIndexName,
 			connEntityData,
 			relData,
-			relName
+			relName,
+			(options && options.direction ? options.direction : null)
 		)
 	}).then(function(resp) {
 		if(options.runAfters) {
@@ -1248,10 +1280,10 @@ function GraphRequest(req, res) {
 		});
 		if(this.connection) {
 			var connectedEntityIndex;
-			if(this.connection.start.index == this.connection.end.index) {
+			if(this.connection.inboundPath == this.connection.outboundPath) {
 				this.connection.direction = "all";
 				connectedEntityIndex = this.connection.start.index;
-			} else if(this.connection.start.index == this.index) {
+			} else if(this.connection.outboundPath.split('.')[1] == pathObj.connection) {
 				this.connection.direction = "out";
 				connectedEntityIndex = this.connection.end.index;
 			} else {
