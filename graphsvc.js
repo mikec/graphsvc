@@ -1033,17 +1033,14 @@ GraphSvc.prototype.getConnectedEntities = function(baseEntityKeyValue, baseEntit
 		if(options.runBefores) {
 			return RunBeforeProcessing('read', baseEntityKeyValue, options.graphRequest);
 		} else {
-			return Q.fcall(function() { return data; });
+			return Q.fcall(function() { return; });
 		}
-	})().then(function(data) {
+	})().then(function() {
 		return $this.getRelatedNodes(
 			baseEntityKeyValue, 
 			baseEntityIndexName, 
-			connection.relationshipName, {
-				skip: options.skip, 
-				limit: options.limit,
-				graphRequest: options.graphRequest
-			}
+			connection.relationshipName, 
+			options
 		);
 	}).then(function(resp) {
 		if(options.runAfters) {
