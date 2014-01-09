@@ -756,8 +756,12 @@ function entityGetHandler(req, res) {
 
 		res.send(r);
 	}, function(err) {
-		res.statusCode = 500;
-		res.send(errorResp(err));
+		if(JSON.parse(err.message).exception == 'NotFoundException') {
+			res.send({});
+		} else {
+			res.statusCode = 500;
+			res.send(errorResp(err));
+		}
 	});
 }
 
