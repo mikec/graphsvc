@@ -11,9 +11,9 @@ exports = module.exports = createApplication;
 
 var __app; // singleton instance of GraphSvc
 
-function createApplication(neo4j_url) {
+function createApplication(neo4j_url, neo4j_username, neo4j_password) {
 	var app = express();
-	var graphSvc = new GraphSvc(neo4j_url);
+	var graphSvc = new GraphSvc(neo4j_url, neo4j_username, neo4j_password);
 	utils.merge(app, graphSvc);
 	app.use(express.bodyParser());
 	app.Request = request;
@@ -21,8 +21,13 @@ function createApplication(neo4j_url) {
 	return app;
 }
 
-function GraphSvc(neo4j_url) {
+function GraphSvc(neo4j_url, neo4j_username, neo4j_password) {
 	this.neo4j_url = neo4j_url;
+	if(neo4j_username && neo4j_password) {
+		var authHeaderVal = 'Basic ' + new Buffer(neo4j_username+':'+neo4j_password).toString('base64');
+		request.setHeader('Authorization', authHeaderVal);
+	}
+
 	this.defaultSkip = 0;
 	this.defaultLimit = 1000;
 
